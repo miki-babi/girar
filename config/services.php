@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'booking' => [
+        'link' => env('BOOKING_LINK'),
+    ],
+
 ];
