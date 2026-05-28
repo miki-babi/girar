@@ -14,8 +14,6 @@ class PollTelegramBusiness extends Command
 {
     protected $signature = 'app:poll-telegram-business';
 
-    private const TEMPORARY_AI_ERROR_REPLY = 'we will get back to you soon';
-
     public function handle(): int
     {
         $token = env('TELEGRAM_BOT_TOKEN');
@@ -91,8 +89,8 @@ class PollTelegramBusiness extends Command
             try {
                 $aiResponse = $agent->prompt(
                     $customerText,
-                    provider: Lab::Gemini,
-                    model: 'gemini-2.5-flash'
+                    provider: Lab::Groq,
+                    model: 'llama-3.3-70b-versatile'
                 );
 
                 return $this->prepareReply((string) $aiResponse, $customerText);
@@ -113,6 +111,9 @@ class PollTelegramBusiness extends Command
 
     private function prepareReply(string $reply, string $customerText): string
     {
+        // Strip leaked function-call markup from LLM responses (e.g. Llama)
+        $reply = preg_replace('/<function=\w+[^>]*>.*?<\/function>/s', '', $reply);
+        $reply = preg_replace('/<function=[^\/]*\/>/s', '', $reply);
         $reply = trim($reply);
         $bookingLink = $this->bookingLink();
 
@@ -120,7 +121,7 @@ class PollTelegramBusiness extends Command
             $reply = str_ireplace(['[GetBookingLink]', 'GetBookingLink'], $bookingLink, $reply);
 
             if ($this->isBookingRequest($customerText) && ! $this->containsUrl($reply)) {
-                return "No problem at all! You can book an appointment here:\n{$bookingLink}";
+                return "You can book an appointment here:\n{$bookingLink}";
             }
         }
 
@@ -132,10 +133,10 @@ class PollTelegramBusiness extends Command
         $bookingLink = $this->bookingLink();
 
         if ($bookingLink && $this->isBookingRequest($customerText)) {
-            return "No problem at all! You can book an appointment here:\n{$bookingLink}";
+            return "You can book an appointment here:\n{$bookingLink}";
         }
 
-        return self::TEMPORARY_AI_ERROR_REPLY;
+        return '';
     }
 
     private function bookingLink(): ?string

@@ -4,23 +4,23 @@ use App\Http\Controllers\BusinessServiceController;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
-Log::debug('routes/web.php loaded for business services routes');
+// Log::debug('routes/web.php loaded for business services routes');
 
-Route::matched(function ($event): void {
-    if (! str_starts_with($event->request->path(), 'business-services')) {
-        return;
-    }
+// Route::matched(function ($event): void {
+//     if (! str_starts_with($event->request->path(), 'business-services')) {
+//         return;
+//     }
 
-    Log::info('Business services route matched from web debug listener', [
-        'method' => $event->request->method(),
-        'path' => $event->request->path(),
-        'route_name' => $event->route->getName(),
-        'route_uri' => $event->route->uri(),
-        'action' => $event->route->getActionName(),
-        'parameters' => $event->route->parameters(),
-        'middleware' => $event->route->gatherMiddleware(),
-    ]);
-});
+//     Log::info('Business services route matched from web debug listener', [
+//         'method' => $event->request->method(),
+//         'path' => $event->request->path(),
+//         'route_name' => $event->route->getName(),
+//         'route_uri' => $event->route->uri(),
+//         'action' => $event->route->getActionName(),
+//         'parameters' => $event->route->parameters(),
+//         'middleware' => $event->route->gatherMiddleware(),
+//     ]);
+// });
 
 Route::inertia('/', 'welcome')->name('home');
 

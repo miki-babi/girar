@@ -24,7 +24,6 @@ class BookingAssistant implements Agent, Conversational, HasTools
                'For questions about business services, policies, delivery, pricing, availability, or other business details, '.
                'use the ServiceAssistant tool before answering. If they want to book an appointment, reserve a spot, '.
                'or schedule a consultation, you MUST use the GetBookingLink tool to fetch our official calendar URL. '.
-               'When ServiceAssistant returns "we will get back to you soon", send that exact reply to the customer. '.
                'Never print tool names such as [GetBookingLink] or [ServiceAssistant]. Always answer naturally and clearly.';
     }
 
