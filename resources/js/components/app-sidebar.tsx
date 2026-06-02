@@ -1,5 +1,12 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid, MessagesSquare } from 'lucide-react';
+import {
+    BookOpen,
+    CalendarCheck,
+    FolderGit2,
+    LayoutGrid,
+    Lightbulb,
+    MessagesSquare,
+} from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -23,9 +30,19 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Service topics',
+        title: 'Knowledge base',
         href: '/business-services/manage',
         icon: MessagesSquare,
+    },
+    {
+        title: 'Customer suggestions',
+        href: '/suggestions/manage',
+        icon: Lightbulb,
+    },
+    {
+        title: 'Booking links',
+        href: '/booking-links/manage',
+        icon: CalendarCheck,
     },
 ];
 

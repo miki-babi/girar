@@ -2,6 +2,7 @@
 
 namespace App\Ai\Tools;
 
+use App\Models\BookingLink;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Ai\Contracts\Tool;
 use Laravel\Ai\Tools\Request;
@@ -32,8 +33,18 @@ class GetBookingLink implements Tool
 
     public function handle(Request $request): Stringable|string
     {
-        $bookingLink = config('services.booking.link');
+        $bookingLink = BookingLink::query()
+            ->active()
+            ->latest()
+            ->first();
 
-        return "Here is our official booking link: {$bookingLink}";
+        if (! $bookingLink) {
+            return 'There is no active booking link configured right now.';
+        }
+
+        $label = $bookingLink->name ? " for {$bookingLink->name}" : '';
+        $description = $bookingLink->description ? " {$bookingLink->description}" : '';
+
+        return "Here is our official booking link{$label}: {$bookingLink->url}.{$description}";
     }
 }

@@ -2,7 +2,8 @@
 
 namespace App\Ai\Tools;
 
-use App\Models\BusinessService;
+use App\Models\KnowledgeBase;
+use App\Models\Suggestion;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Ai\Contracts\Tool;
 use Laravel\Ai\Tools\Request;
@@ -10,12 +11,14 @@ use Stringable;
 
 class ServiceAssistant implements Tool
 {
+    public function __construct(private readonly ?string $chatId = null) {}
+
     /**
      * Get the description of the tool's purpose.
      */
     public function description(): Stringable|string
     {
-        return 'Search the business_services table and return concise service details.';
+        return 'Search the knowledge base and return concise topic and answer details.';
     }
 
     /**
@@ -26,23 +29,28 @@ class ServiceAssistant implements Tool
         $question = trim((string) ($request['question'] ?? ''));
 
         if ($question === '') {
-            return '';
+            return 'No question was provided to search the knowledge base.';
         }
 
-        $services = BusinessService::query()
+        $entries = KnowledgeBase::query()
             ->active()
             ->matchingQuestion($question)
-            ->orderBy('topic')
+            ->with('knowledgeTopic:id,topic')
+            ->orderBy('sub_topic')
             ->limit(3)
-            ->get(['topic', 'description']);
+            ->get(['knowledge_topic_id', 'sub_topic', 'description']);
 
-        if ($services->isEmpty()) {
-            // return self::NOT_FOUND_REPLY;
-            return '';
+        if ($entries->isEmpty()) {
+            Suggestion::firstOrCreate(
+                ['question' => $question],
+                ['chat_id' => $this->chatId, 'added_to_kb' => false],
+            );
+
+            return 'No matching knowledge base entries found for this question.';
         }
 
-        return $services
-            ->map(fn (BusinessService $service) => "{$service->topic}: {$service->description}")
+        return $entries
+            ->map(fn (KnowledgeBase $entry) => "{$entry->knowledgeTopic->topic} — {$entry->sub_topic}: {$entry->description}")
             ->implode("\n");
     }
 
@@ -53,7 +61,7 @@ class ServiceAssistant implements Tool
     {
         return [
             'question' => $schema->string()
-                ->description('The customer question to search for in the business service knowledge base.')
+                ->description('The customer question to search for in the knowledge base.')
                 ->required(),
         ];
     }

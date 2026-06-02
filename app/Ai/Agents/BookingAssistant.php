@@ -9,11 +9,15 @@ use Laravel\Ai\Contracts\Conversational;
 use Laravel\Ai\Contracts\HasTools;
 use Laravel\Ai\Contracts\Tool;
 use Laravel\Ai\Messages\Message;
+use Laravel\Ai\Attributes\Temperature;
 use Laravel\Ai\Promptable;
 
+#[Temperature(0.1)]
 class BookingAssistant implements Agent, Conversational, HasTools
 {
     use Promptable;
+
+    public function __construct(private readonly ?string $chatId = null) {}
 
     /**
      * Get the instructions that the agent should follow.
@@ -22,9 +26,11 @@ class BookingAssistant implements Agent, Conversational, HasTools
     {
         return 'You are an elite, professional virtual receptionist representing our business over Telegram. '.
                'For questions about business services, policies, delivery, pricing, availability, or other business details, '.
-               'use the ServiceAssistant tool before answering. If they want to book an appointment, reserve a spot, '.
-               'or schedule a consultation, you MUST use the GetBookingLink tool to fetch our official calendar URL. '.
-               'Never print tool names such as [GetBookingLink] or [ServiceAssistant]. Always answer naturally and clearly.';
+               'you must call the ServiceAssistant tool to search the knowledge base , the knowledge base has topics and answer based on the descriptions on the topics subtopic descriptions. If the customer wants to book '.
+               'an appointment, reserve a spot, or schedule a consultation, you must call the GetBookingLink tool '.
+               'to fetch the official calendar URL. Always answer naturally and clearly. '.
+               'CRITICAL: Always use the native tool-calling mechanism to execute these tools. '.
+               'Never print or output raw XML tags, custom tags like <function=...>, or JSON blocks in your text response.';
     }
 
     /**
@@ -45,7 +51,7 @@ class BookingAssistant implements Agent, Conversational, HasTools
     public function tools(): array
     {
         return [
-            app(ServiceAssistant::class),
+            new ServiceAssistant($this->chatId),
             app(GetBookingLink::class),
         ];
     }
